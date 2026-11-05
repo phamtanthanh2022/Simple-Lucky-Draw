@@ -336,6 +336,42 @@
             font-weight: 700;
         }
 
+        .participant-list {
+            display: grid;
+            gap: 5px;
+            max-height: 170px;
+            margin: 10px 0 0;
+            overflow-y: auto;
+            list-style: none;
+        }
+
+        .participant-list:empty::before {
+            padding: 5px 0;
+            color: var(--muted);
+            content: "Your numbered entries will appear here.";
+            font-size: 0.8rem;
+        }
+
+        .participant-list li {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            min-width: 0;
+            color: var(--ink);
+            font-size: 0.84rem;
+        }
+
+        .participant-number {
+            flex: 0 0 28px;
+            color: var(--muted);
+            font-variant-numeric: tabular-nums;
+            text-align: right;
+        }
+
+        .participant-name {
+            overflow-wrap: anywhere;
+        }
+
         .entry-count {
             color: var(--muted);
             font-size: 0.78rem;
@@ -536,6 +572,18 @@
             text-transform: uppercase;
         }
 
+        .result-index {
+            display: inline-block;
+            margin: 0 0 8px;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: #f2e7ca;
+            color: #745a1c;
+            font-size: 0.78rem;
+            font-weight: 700;
+            font-variant-numeric: tabular-nums;
+        }
+
         #winner-name {
             margin: 0;
             overflow-wrap: anywhere;
@@ -650,6 +698,7 @@
                     <span class="entry-count"><span id="playerCount">0</span> entries</span>
                 </div>
                 <textarea id="players" rows="7" aria-describedby="entryHint"></textarea>
+                <ol id="participantList" class="participant-list" aria-label="Numbered player entries"></ol>
                 <div class="form-footer">
                     <label class="language-control" for="spinDuration">Spin time
                         <select id="spinDuration">
@@ -672,6 +721,7 @@
                 </div>
                 <div id="result" class="result" hidden aria-live="polite">
                     <p class="result-label">The winner is</p>
+                    <p id="winner-index" class="result-index"></p>
                     <p id="winner-name"></p>
                     <p id="losers"></p>
                 </div>
@@ -812,6 +862,19 @@
         function updatePlayers() {
             players = readPlayers();
             document.getElementById("playerCount").textContent = players.length;
+            const participantList = document.getElementById("participantList");
+            participantList.replaceChildren();
+            players.forEach((name, index) => {
+                const item = document.createElement("li");
+                const number = document.createElement("span");
+                const playerName = document.createElement("span");
+                number.className = "participant-number";
+                number.textContent = String(index + 1).padStart(2, "0");
+                playerName.className = "participant-name";
+                playerName.textContent = name;
+                item.append(number, playerName);
+                participantList.appendChild(item);
+            });
             spinButton.disabled = isSpinning || players.length < 2;
             document.getElementById("clearBtn").disabled = isSpinning || !playerInput.value;
             document.getElementById("entryHint").textContent = players.length < 2
@@ -878,6 +941,7 @@
             spinButton.disabled = players.length < 2;
             document.getElementById("clearBtn").disabled = !playerInput.value;
             wheelStatus.textContent = "Draw complete";
+            document.getElementById("winner-index").textContent = `List position #${winnerIndex + 1} of ${players.length}`;
             document.getElementById("winner-name").textContent = players[winnerIndex];
             document.getElementById("losers").textContent = players
                 .filter((_, index) => index !== winnerIndex)
