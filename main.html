@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lucky Zodiac Wheel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .frame {
+            width: 90vw;
+            max-width: 1000px;
+            height: 80vh;
+            max-height: 700px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            animation: frameGlow 4s infinite alternate;
+        }
+
+        @keyframes frameGlow {
+            0% { border-color: rgba(255, 107, 107, 0.5); }
+            50% { border-color: rgba(81, 255, 184, 0.5); }
+            100% { border-color: rgba(255, 255, 255, 0.2); }
+        }
+
+        .screen {
+            display: none;
+            width: 100%;
+            height: 100%;
+            padding: 30px;
+            text-align: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            color: #fff;
+        }
+
+        .screen.active {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            background: linear-gradient(45deg, #ff6b6b, #51ffbb);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 10px rgba(81, 255, 184, 0.3);
+        }
+
+        select, textarea {
+            width: 100%;
+            max-width: 400px;
+            padding: 12px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            color: #004cff;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        select:focus, textarea:focus {
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 15px rgba(81, 255, 184, 0.5);
+        }
+
+        textarea {
+            resize: none;
+            height: 150px;
+        }
+
+        button {
+            padding: 12px 80px;
+            border: none;
+            border-radius: 50px;
+            background: linear-gradient(45deg, #ff6b6b, #51ffbb);
+            color: #1a1a2e;
+            font-size: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(81, 255, 184, 0.6);
+        }
+
+        button:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 10px rgba(81, 255, 184, 0.3);
+        }
+
+        #wheel-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #wheel {
+            position: relative;
+            transition: transform 10s ease-out;
+        }
+
+        .player-card {
+            position: absolute;
+            width: 180px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            transition: all 0.5s;
+            backdrop-filter: blur(5px);
+        }
+
+        @keyframes spinGlow {
+            0% { background: rgba(255, 255, 255, 0.2); }
+            50% { background: rgba(81, 255, 184, 0.4); }
+            100% { background: rgba(255, 255, 255, 0.2); }
+        }
+
+        @keyframes fireworks {
+            0% { transform: scale(0); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .firework {
+            position: absolute;
+            width: 15px;
+            height: 15px;
+            background: radial-gradient(circle, #ff6b6b, #51ffbb, transparent);
+            border-radius: 50%;
+            animation: fireworks 1.2s ease-out;
+            box-shadow: 0 0 10px rgba(81, 255, 184, 0.8);
+        }
+
+        #winner-frame {
+            background: rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(81, 255, 184, 0.3);
+            animation: winnerGlow 2s infinite alternate;
+            max-width: 80%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes winnerGlow {
+            0% { box-shadow: 0 0 20px rgba(255, 107, 107, 0.5); }
+            100% { box-shadow: 0 0 40px rgba(81, 255, 184, 0.8); }
+        }
+
+        #winner-name {
+            font-size: 3rem;
+            font-weight: 700;
+            background: linear-gradient(45deg, #ff6b6b, #51ffbb);
+            -webkit-background-clip: text;
+            color: transparent;
+            margin-bottom: 20px;
+            text-shadow: 0 4px 15px rgba(81, 255, 184, 0.5);
+        }
+
+        #losers {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 10px;
+            backdrop-filter: blur(5px);
+            max-width: 80%;
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="frame">
+        <!-- Screen 1: Start -->
+        <div id="screen1" class="screen active">
+            <h1 id="title"></h1>
+            <select id="language"></select>
+            <select id="zodiac"></select>
+            <select id="wheelSize">
+                <option value="100">100x100</option>
+                <option value="200">200x200</option>
+                <option value="300">300x300</option>
+                <option value="400">400x400</option>
+                <option value="500">500x500</option>
+                <option value="600">600x600</option>
+            </select>
+            <textarea id="players" rows="5"></textarea>
+            <button id="spinBtn"></button>
+        </div>
+
+        <!-- Screen 2: Wheel -->
+        <div id="screen2" class="screen">
+            <div id="wheel-container">
+                <div id="wheel"></div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Winner -->
+        <div id="screen3" class="screen">
+            <div id="winner-frame">
+                <div id="winner-name"></div>
+                <button id="restartBtn"></button>
+            </div>
+            <div id="losers"></div>
+        </div>
+    </div>
+
+    <script>
+        const translations = {
+            vi: { 
+                title: "Vòng Quay May Mắn", 
+                placeholder: "Nhập tên người chơi (mỗi dòng 1 tên)", 
+                spin: "Quay", 
+                restart: "Khởi động lại", 
+                goodLuck: "Chúc may mắn lần sau!",
+                zodiacs: ["Bạch Dương", "Kim Ngưu", "Song Tử", "Cự Giải", "Sư Tử", "Xử Nữ", "Thiên Bình", "Bọ Cạp", "Nhân Mã", "Ma Kết", "Bảo Bình", "Song Ngư"],
+                languages: ["Tiếng Việt", "English", "Español", "Français", "Deutsch", "Italiano", "Português", "Русский", "中文", "日本語"]
+            },
+            en: { 
+                title: "Lucky Wheel", 
+                placeholder: "Enter player names (one per line)", 
+                spin: "Spin", 
+                restart: "Restart", 
+                goodLuck: "Good luck next time!",
+                zodiacs: ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"],
+                languages: ["Vietnamese", "English", "Spanish", "French", "German", "Italian", "Portuguese", "Russian", "Chinese", "Japanese"]
+            },
+            es: { 
+                title: "Rueda de la Suerte", 
+                placeholder: "Ingrese nombres (uno por línea)", 
+                spin: "Girar", 
+                restart: "Reiniciar", 
+                goodLuck: "¡Suerte la próxima vez!",
+                zodiacs: ["Aries", "Tauro", "Géminis", "Cáncer", "Leo", "Virgo", "Libra", "Escorpio", "Sagitario", "Capricornio", "Acuario", "Piscis"],
+                languages: ["Vietnamita", "Inglés", "Español", "Francés", "Alemán", "Italiano", "Portugués", "Ruso", "Chino", "Japonés"]
+            },
+            fr: { 
+                title: "Roue de la Chance", 
+                placeholder: "Entrez les noms (un par ligne)", 
+                spin: "Tourner", 
+                restart: "Redémarrer", 
+                goodLuck: "Bonne chance la prochaine fois !",
+                zodiacs: ["Bélier", "Taureau", "Gémeaux", "Cancer", "Lion", "Vierge", "Balance", "Scorpion", "Sagittaire", "Capricorne", "Verseau", "Poissons"],
+                languages: ["Vietnamien", "Anglais", "Espagnol", "Français", "Allemand", "Italien", "Portugais", "Russe", "Chinois", "Japonais"]
+            },
+            de: { 
+                title: "Glücksrad", 
+                placeholder: "Spielernamen eingeben (einer pro Zeile)", 
+                spin: "Drehen", 
+                restart: "Neustart", 
+                goodLuck: "Viel Glück nächstes Mal!",
+                zodiacs: ["Widder", "Stier", "Zwillinge", "Krebs", "Löwe", "Jungfrau", "Waage", "Skorpion", "Schütze", "Steinbock", "Wassermann", "Fische"],
+                languages: ["Vietnamesisch", "Englisch", "Spanisch", "Französisch", "Deutsch", "Italienisch", "Portugiesisch", "Russisch", "Chinesisch", "Japanisch"]
+            },
+            it: { 
+                title: "Ruota della Fortuna", 
+                placeholder: "Inserisci i nomi (uno per riga)", 
+                spin: "Gira", 
+                restart: "Ricomincia", 
+                goodLuck: "Buona fortuna la prossima volta!",
+                zodiacs: ["Ariete", "Toro", "Gemelli", "Cancro", "Leone", "Vergine", "Bilancia", "Scorpione", "Sagittario", "Capricorno", "Acquario", "Pesci"],
+                languages: ["Vietnamita", "Inglese", "Spagnolo", "Francese", "Tedesco", "Italiano", "Portoghese", "Russo", "Cinese", "Giapponese"]
+            },
+            pt: { 
+                title: "Roda da Sorte", 
+                placeholder: "Digite os nomes (um por linha)", 
+                spin: "Girar", 
+                restart: "Reiniciar", 
+                goodLuck: "Boa sorte da próxima vez!",
+                zodiacs: ["Áries", "Touro", "Gêmeos", "Câncer", "Leão", "Virgem", "Libra", "Escorpião", "Sagitário", "Capricórnio", "Aquário", "Peixes"],
+                languages: ["Vietnamita", "Inglês", "Espanhol", "Francês", "Alemão", "Italiano", "Português", "Russo", "Chinês", "Japonês"]
+            },
+            ru: { 
+                title: "Колесо Удачи", 
+                placeholder: "Введите имена (по одному в строке)", 
+                spin: "Крутить", 
+                restart: "Перезапустить", 
+                goodLuck: "Удачи в следующий раз!",
+                zodiacs: ["Овен", "Телец", "Близнецы", "Рак", "Лев", "Дева", "Весы", "Скорпион", "Стрелец", "Козерог", "Водолей", "Рыбы"],
+                languages: ["Вьетнамский", "Английский", "Испанский", "Французский", "Немецкий", "Итальянский", "Португальский", "Русский", "Китайский", "Японский"]
+            },
+            zh: { 
+                title: "幸运轮", 
+                placeholder: "输入玩家姓名（每行一个）", 
+                spin: "旋转", 
+                restart: "重启", 
+                goodLuck: "下次好运！",
+                zodiacs: ["白羊座", "金牛座", "双子座", "巨蟹座", "狮子座", "处女座", "天秤座", "天蝎座", "射手座", "摩羯座", "水瓶座", "双鱼座"],
+                languages: ["越南语", "英语", "西班牙语", "法语", "德语", "意大利语", "葡萄牙语", "俄语", "中文", "日语"]
+            },
+            ja: { 
+                title: "幸運の輪", 
+                placeholder: "プレイヤー名を入力（1行に1つ）", 
+                spin: "回す", 
+                restart: "リスタート", 
+                goodLuck: "次回は幸運を！",
+                zodiacs: ["牡羊座", "牡牛座", "双子座", "蟹座", "獅子座", "乙女座", "天秤座", "蠍座", "射手座", "山羊座", "水瓶座", "魚座"],
+                languages: ["ベトナム語", "英語", "スペイン語", "フランス語", "ドイツ語", "イタリア語", "ポルトガル語", "ロシア語", "中国語", "日本語"]
+            }
+        };
+
+        const zodiacKeys = ["Aries", "Taurus", "Gemini", "Cancer", "Leo", "Virgo", "Libra", "Scorpio", "Sagittarius", "Capricorn", "Aquarius", "Pisces"];
+
+        const zodiacStyles = {
+            "Aries": { duration: 10, easing: "cubic-bezier(0.95, 0.05, 0.795, 0.035)" },
+            "Taurus": { duration: 12, easing: "ease-in" },
+            "Gemini": { duration: 8, easing: "ease-out" },
+            "Cancer": { duration: 11, easing: "cubic-bezier(0.68, -0.55, 0.27, 1.55)" },
+            "Leo": { duration: 9, easing: "ease-in-out" },
+            "Virgo": { duration: 10, easing: "cubic-bezier(0.25, 0.1, 0.25, 1)" },
+            "Libra": { duration: 13, easing: "ease" },
+            "Scorpio": { duration: 7, easing: "cubic-bezier(0.86, 0, 0.07, 1)" },
+            "Sagittarius": { duration: 10, easing: "cubic-bezier(0.39, 0.58, 0.57, 1)" },
+            "Capricorn": { duration: 11, easing: "ease-in-out" },
+            "Aquarius": { duration: 9, easing: "cubic-bezier(0.55, 0.09, 0.68, 0.53)" },
+            "Pisces": { duration: 12, easing: "cubic-bezier(0.22, 0.61, 0.36, 1)" }
+        };
+
+        const screens = [document.getElementById('screen1'), document.getElementById('screen2'), document.getElementById('screen3')];
+        let currentScreen = 0;
+        let players = [];
+        let winner = "";
+        let currentLang = "vi"; // Ngôn ngữ mặc định
+
+        // Initialize
+        function init() {
+            populateLanguageMenu(); // Điền menu ngôn ngữ trước
+            populateZodiacs(currentLang); // Điền menu cung hoàng đạo trước
+            updateLanguage(); // Cập nhật giao diện theo ngôn ngữ mặc định
+            document.getElementById('spinBtn').addEventListener('click', startSpin);
+            document.getElementById('restartBtn').addEventListener('click', () => location.reload());
+            document.getElementById('language').addEventListener('change', updateLanguage);
+        }
+
+        // Populate Language Menu
+        function populateLanguageMenu() {
+            const languageSelect = document.getElementById('language');
+            languageSelect.innerHTML = '';
+            Object.keys(translations).forEach((key, index) => {
+                const option = document.createElement('option');
+                option.value = key;
+                option.textContent = translations[currentLang].languages[index];
+                if (key === currentLang) option.selected = true;
+                languageSelect.appendChild(option);
+            });
+        }
+
+        // Update Language
+        function updateLanguage() {
+            const lang = document.getElementById('language').value;
+            currentLang = lang;
+            const t = translations[lang];
+
+            // Cập nhật tiêu đề
+            document.getElementById('title').textContent = t.title;
+
+            // Cập nhật placeholder
+            document.getElementById('players').placeholder = t.placeholder;
+
+            // Cập nhật nút
+            document.getElementById('spinBtn').textContent = t.spin;
+            document.getElementById('restartBtn').textContent = t.restart;
+
+            // Cập nhật menu ngôn ngữ
+            populateLanguageMenu();
+
+            // Cập nhật menu cung hoàng đạo
+            populateZodiacs(lang);
+        }
+
+        // Populate Zodiacs
+        function populateZodiacs(lang) {
+            const zodiacSelect = document.getElementById('zodiac');
+            const selectedZodiac = zodiacSelect.value; // Lưu cung đã chọn trước đó
+            zodiacSelect.innerHTML = '';
+            translations[lang].zodiacs.forEach((z, index) => {
+                const option = document.createElement('option');
+                option.value = zodiacKeys[index]; // Dùng key gốc để ánh xạ với zodiacStyles
+                option.textContent = z;
+                zodiacSelect.appendChild(option);
+            });
+            if (selectedZodiac) zodiacSelect.value = selectedZodiac; // Khôi phục giá trị đã chọn
+        }
+
+        // Start Spin
+        function startSpin() {
+            const playerInput = document.getElementById('players').value.trim();
+            if (!playerInput) {
+                alert(translations[currentLang].placeholder);
+                return;
+            }
+            players = playerInput.split('\n').filter(p => p.trim());
+            if (players.length < 2) {
+                alert('Need at least 2 players! / Cần ít nhất 2 người chơi!');
+                return;
+            }
+
+            switchScreen(1);
+            createWheel();
+            spinWheel();
+        }
+
+        // Switch Screen
+        function switchScreen(index) {
+            screens[currentScreen].classList.remove('active');
+            screens[index].classList.add('active');
+            currentScreen = index;
+        }
+
+        // Create Wheel
+        function createWheel() {
+            const size = parseInt(document.getElementById('wheelSize').value);
+            const wheel = document.getElementById('wheel');
+            wheel.style.width = `${size}px`;
+            wheel.style.height = `${size}px`;
+            const radius = size / 2;
+            const angleStep = 360 / players.length;
+
+            wheel.innerHTML = ''; // Xóa vòng quay cũ
+            players.forEach((player, i) => {
+                const card = document.createElement('div');
+                card.className = 'player-card';
+                card.textContent = `${player} (${translations[currentLang].zodiacs[i % 12]})`;
+                const angle = angleStep * i - 90;
+                const x = radius + radius * Math.cos(angle * Math.PI / 180) - 50;
+                const y = radius + radius * Math.sin(angle * Math.PI / 180) - 25;
+                card.style.left = `${x}px`;
+                card.style.top = `${y}px`;
+                card.style.transform = `rotate(${angle + 90}deg)`;
+                wheel.appendChild(card);
+
+                // Animation for cards
+                setInterval(() => {
+                    card.style.background = `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.3)`;
+                    card.style.fontFamily = ['Arial', 'Times New Roman', 'Courier', 'Poppins'][Math.floor(Math.random() * 4)];
+                }, 500);
+            });
+        }
+
+        // Spin Wheel
+        function spinWheel() {
+            const zodiac = document.getElementById('zodiac').value;
+            const { duration, easing } = zodiacStyles[zodiac];
+            const wheel = document.getElementById('wheel');
+            const spins = 5 + Math.floor(Math.random() * 5); // 5-10 vòng
+            const winnerIndex = Math.floor(Math.random() * players.length);
+            const anglePerPlayer = 360 / players.length;
+            const finalAngle = spins * 360 + winnerIndex * anglePerPlayer;
+
+            wheel.style.transition = `transform ${duration}s ${easing}`;
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+
+            setTimeout(() => {
+                winner = players[winnerIndex];
+                switchScreen(2);
+                showWinner();
+                createFireworks();
+            }, duration * 1000);
+        }
+
+        // Show Winner
+        function showWinner() {
+            document.getElementById('winner-name').textContent = `${winner} 🎉`;
+            const losers = players.filter(p => p !== winner);
+            document.getElementById('losers').innerHTML = `
+                <p style="margin-bottom: 10px;">${losers.join(', ')}</p>
+                <p>${translations[currentLang].goodLuck}</p>
+            `;
+        }
+
+        // Create Fireworks
+        function createFireworks() {
+            for (let i = 0; i < 30; i++) {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                const x = Math.random() * window.innerWidth;
+                const y = Math.random() * window.innerHeight;
+                firework.style.left = `${x}px`;
+                firework.style.top = `${y}px`;
+                document.body.appendChild(firework);
+                setTimeout(() => firework.remove(), 1200);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
